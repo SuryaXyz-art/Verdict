@@ -6,7 +6,18 @@ import { somniaTestnet } from "@/lib/chain";
 
 const config = createConfig({
   chains: [somniaTestnet],
-  connectors: [injected()],
+  multiInjectedProviderDiscovery: false,
+  connectors: [
+    injected({
+      target() {
+        return {
+          id: "okxWallet",
+          name: "OKX Wallet",
+          provider: typeof window !== "undefined" ? (window as any).okxwallet : undefined,
+        };
+      },
+    }),
+  ],
   transports: { [somniaTestnet.id]: http() },
   ssr: true,
 });

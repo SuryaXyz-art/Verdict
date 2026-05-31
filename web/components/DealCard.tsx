@@ -36,14 +36,14 @@ export function DealCard({ id }: { id: bigint }) {
   return (
     <div className="panel p-5">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-sm text-muted">Case #{id.toString()} <span className="text-white">{tpl.icon} {tpl.label}</span></span>
+        <span className="font-mono text-sm text-muted">Case #{id.toString()} <span className="text-white">{tpl.code} · {tpl.label}</span></span>
         <span className={`tag ${stateColor}`}>{STATE_LABELS[deal.state]}</span>
       </div>
       <p className="mt-3 text-sm">{text}</p>
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted">
         <span>client {short(deal.client)}</span>
         <span>provider {short(deal.provider)}</span>
-        <span className="tag text-gold" title="Wins ruled by the AI court">★ {(providerRep ?? 0n).toString()}</span>
+        <span className="tag text-gold" title="Wins ruled by the AI court">Rep {(providerRep ?? 0n).toString()}</span>
         <span className="text-white">{formatEther(deal.amount)} STT</span>
       </div>
 
@@ -54,7 +54,7 @@ export function DealCard({ id }: { id: bigint }) {
         </div>
       )}
 
-      {judging && <p className="mt-4 text-xs text-neutral-400">⚖️ Somnia AI committee is deliberating… (request {deal.requestId.toString()})</p>}
+      {judging && <p className="mt-4 text-xs text-neutral-400">Somnia AI committee is deliberating… (request {deal.requestId.toString()})</p>}
 
       {open && isParty && (
         <div className="mt-4 space-y-2 border-t border-line pt-3">

@@ -11,12 +11,16 @@ export function Connect() {
   const { switchChain } = useSwitchChain();
 
   if (!isConnected) {
-    // One button: prefer the injected wallet (MetaMask), fall back to any discovered connector.
-    const connector = connectors.find((c) => c.id === "injected") ?? connectors[0];
+    const onClick = () => {
+      if (typeof window !== "undefined" && !(window as any).okxwallet) {
+        window.open("https://www.okx.com/web3", "_blank");
+        return;
+      }
+      if (connectors[0]) connect({ connector: connectors[0] });
+    };
     return (
-      <button className="btn-gold" disabled={isPending} title={error?.message}
-        onClick={() => connector && connect({ connector })}>
-        {isPending ? "Connecting…" : "Connect Wallet"}
+      <button className="btn-gold" disabled={isPending} title={error?.message} onClick={onClick}>
+        {isPending ? "Connecting…" : "Connect OKX Wallet"}
       </button>
     );
   }

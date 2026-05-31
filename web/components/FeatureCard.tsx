@@ -38,7 +38,7 @@ export function FeatureCard({ id, type }: { id: bigint; type: FeatureId }) {
   return (
     <div className="panel p-5">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-sm text-muted">Case #{id.toString()} <span className="text-white">{tpl.icon} {tpl.label}</span></span>
+        <span className="font-mono text-sm text-muted">Case #{id.toString()} <span className="text-white">{tpl.code} · {tpl.label}</span></span>
         <span className={`tag ${open ? "text-white" : judging ? "text-neutral-400" : "text-neutral-200"}`}>{stateText}</span>
       </div>
       <p className="mt-3 text-sm">{d.text}</p>
@@ -55,7 +55,7 @@ export function FeatureCard({ id, type }: { id: bigint; type: FeatureId }) {
         </div>
       )}
 
-      {judging && <p className="mt-4 text-xs text-neutral-400">⚖️ Somnia AI committee is deliberating… (request {d.requestId.toString()})</p>}
+      {judging && <p className="mt-4 text-xs text-neutral-400">Somnia AI committee is deliberating… (request {d.requestId.toString()})</p>}
 
       {unfunded && isA && (
         <button className="btn-gold mt-4 text-xs" disabled={isPending} onClick={() => tx("payInvoice", [id], d.amount)}>
