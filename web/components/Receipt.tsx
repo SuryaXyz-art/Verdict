@@ -35,7 +35,7 @@ export function Receipt({ requestId }: { requestId: bigint }) {
           {loading ? "Loading…" : "Load inline"}
         </button>
       )}
-      {err && <p className="mt-2 text-xs text-red-400">Receipt unavailable: {err}</p>}
+      {err && <p className="mt-2 text-xs text-neutral-400">Receipt unavailable: {err}</p>}
       {steps && (
         <ol className="mt-2 space-y-1 rounded-lg border border-dashed border-line bg-black/50 p-3 font-mono text-xs">
           {steps.map((s, i) => (

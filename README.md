@@ -19,6 +19,22 @@ ruling links to a genuine Somnia audit receipt.
 - **Nous Hermes (off-chain):** drafts a rich, human-readable case brief — *advisory only*.
 - **Somnia on-chain AI (consensus):** issues the **binding** verdict and settles escrow.
 
+## Verdict Types
+
+Each type is its **own deployable contract**, all sharing the `AgentArbitrated` base (the Somnia
+AI dispute + settlement plumbing). They differ in how funds enter and how the happy path settles:
+
+| Type | Contract | Distinct mechanic |
+|---|---|---|
+| 🔒 **Escrow** | `VerdictCourt` | Client escrows up front; client confirms delivery to release. |
+| 🧾 **Invoice** | `InvoiceVerdict` | **Payee-initiated**: payee issues an invoice, payer funds it later, payer accepts to release. |
+| 🎁 **Gift** | `GiftVerdict` | Sender funds a gift; **recipient pull-claims** it. |
+| ✉️ **Envelope** | `EnvelopeVerdict` | **Hashlocked**: funds locked by `keccak256(passcode)`; recipient reveals the passcode to open. |
+
+Any party can dispute any type; Somnia's validator subcommittee then rules **RELEASE / REFUND / SPLIT**
+by consensus and the contract settles automatically. Each is covered by mock tests
+(`npx hardhat test` → 21 passing).
+
 ## How it works
 
 ```
@@ -83,13 +99,20 @@ npm run dev
    npm run deploy:somnia
    npx hardhat verify --network somniaTestnet <ADDRESS> <AGENT_REQUESTER> <LLM_AGENT_ID>
    ```
-4. Put the deployed address in `web/.env.local` and `worker/.env`.
+4. Deploy the feature contracts (Invoice / Gift / Envelope):
+   ```bash
+   npm run deploy:features   # prints an address for each
+   ```
+5. Put the deployed addresses in `web/.env.local` and `worker/.env`.
 
 ## Deployed addresses
 
 | Contract | Network | Address |
 |---|---|---|
 | VerdictCourt | Somnia Testnet | [`0x67288D6249eA68C05e46B484057Ca705F0f28cc4`](https://shannon-explorer.somnia.network/address/0x67288D6249eA68C05e46B484057Ca705F0f28cc4) |
+| InvoiceVerdict | Somnia Testnet | [`0x14000BeeDc9A27653F7B6AEeC1D7EdE2e4F7f1ff`](https://shannon-explorer.somnia.network/address/0x14000BeeDc9A27653F7B6AEeC1D7EdE2e4F7f1ff) |
+| GiftVerdict | Somnia Testnet | [`0xcB7fC654E3bCDA90d63409A7ffb5caa1e8f8536c`](https://shannon-explorer.somnia.network/address/0xcB7fC654E3bCDA90d63409A7ffb5caa1e8f8536c) |
+| EnvelopeVerdict | Somnia Testnet | [`0xc35542246F3703876Bb9c000e1211C4641E67436`](https://shannon-explorer.somnia.network/address/0xc35542246F3703876Bb9c000e1211C4641E67436) |
 
 ### Live end-to-end proof
 

@@ -3,13 +3,32 @@
 @tailwind utilities;
 
 body {
-  background: radial-gradient(900px 500px at 50% -10%, rgba(242,202,80,0.10), transparent), #0a0a0b;
   color: #f5f5f5;
+  background: #000;
+}
+
+/* Live moving black & white background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(40% 60% at 20% 30%, rgba(255, 255, 255, 0.10), transparent 60%),
+    radial-gradient(35% 55% at 80% 70%, rgba(255, 255, 255, 0.07), transparent 60%),
+    linear-gradient(120deg, #000000, #141414, #000000);
+  background-size: 200% 200%, 200% 200%, 300% 300%;
+  animation: drift 20s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0%, 100% { background-position: 0% 50%, 100% 50%, 0% 50%; }
+  50%      { background-position: 100% 50%, 0% 50%, 100% 50%; }
 }
 
 .panel { @apply rounded-2xl border border-line bg-panel backdrop-blur; }
 .btn { @apply rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-40; }
-.btn-gold { @apply btn bg-gold text-black hover:bg-yellow-300; }
+.btn-gold { @apply btn bg-gold text-black hover:bg-white/80; }
 .btn-ghost { @apply btn border border-line text-white hover:bg-white/5; }
-.input { @apply w-full rounded-lg border border-line bg-black/40 px-3 py-2 text-sm outline-none focus:border-gold/60; }
+.input { @apply w-full rounded-lg border border-line bg-black/40 px-3 py-2 text-sm outline-none focus:border-white/60; }
 .tag { @apply rounded-full border border-line px-2.5 py-0.5 text-xs font-mono; }

@@ -5,11 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "#0a0a0b",
+        ink: "#000000",
         panel: "rgba(255,255,255,0.04)",
-        line: "rgba(255,255,255,0.08)",
-        gold: "#f2ca50",
-        muted: "#9aa0a6",
+        line: "rgba(255,255,255,0.12)",
+        gold: "#ffffff",
+        muted: "#a1a1aa",
       },
       fontFamily: { mono: ["ui-monospace", "SFMono-Regular", "monospace"] },
     },
