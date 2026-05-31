@@ -7,23 +7,33 @@ body {
   background: #000;
 }
 
-/* Live moving black & white background */
+/* Live moving pixel background (black & white) */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(40% 60% at 20% 30%, rgba(255, 255, 255, 0.10), transparent 60%),
-    radial-gradient(35% 55% at 80% 70%, rgba(255, 255, 255, 0.07), transparent 60%),
-    linear-gradient(120deg, #000000, #141414, #000000);
-  background-size: 200% 200%, 200% 200%, 300% 300%;
-  animation: drift 20s ease-in-out infinite;
+  background-color: #000;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.10) 1.5px, transparent 1.5px),
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px, 12px 12px;
+  background-position: 0 0, 6px 6px;
+  animation: pixels 16s linear infinite;
 }
 
-@keyframes drift {
-  0%, 100% { background-position: 0% 50%, 100% 50%, 0% 50%; }
-  50%      { background-position: 100% 50%, 0% 50%, 100% 50%; }
+/* subtle vignette for depth */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(70% 60% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 70%);
+}
+
+@keyframes pixels {
+  to { background-position: 220px 220px, 246px 246px; }
 }
 
 .panel { @apply rounded-2xl border border-line bg-panel backdrop-blur; }
