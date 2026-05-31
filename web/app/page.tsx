@@ -54,6 +54,19 @@ export default function Home() {
         <p className="mx-auto mt-4 max-w-xl text-muted">Escrow, invoices, gifts and sealed envelopes — each its own contract. If a deal is disputed, Somnia's consensus-validated on-chain AI rules the outcome and settles funds automatically, with a real audit receipt. No admin, no jurors.</p>
       </section>
 
+      <section className="mb-10 grid gap-3 md:grid-cols-3">
+        {[
+          ["1 · Create & fund", "Open an escrow, invoice, gift or envelope — each is its own on-chain contract that locks your STT."],
+          ["2 · Dispute → on-chain AI", "If the parties disagree, Somnia's validator subcommittee runs a deterministic LLM and reaches consensus on the verdict."],
+          ["3 · Auto-settle + receipt", "The contract releases, refunds or splits the funds automatically, linked to a genuine, auditable execution receipt."],
+        ].map(([t, d]) => (
+          <div key={t} className="panel p-4">
+            <p className="font-semibold">{t}</p>
+            <p className="mt-1 text-sm text-muted">{d}</p>
+          </div>
+        ))}
+      </section>
+
       <section className="panel p-6">
         <h2 className="mb-1 text-lg font-semibold">Create a verdict</h2>
         <p className="mb-4 text-sm text-muted">Pick a type — each is a dedicated contract, all settled by Somnia's on-chain AI if disputed.</p>

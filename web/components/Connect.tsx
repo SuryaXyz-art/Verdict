@@ -11,23 +11,13 @@ export function Connect() {
   const { switchChain } = useSwitchChain();
 
   if (!isConnected) {
-    const seen = new Set<string>();
-    const wallets = connectors.filter((c) => !seen.has(c.name) && seen.add(c.name));
+    // One button: prefer the injected wallet (MetaMask), fall back to any discovered connector.
+    const connector = connectors.find((c) => c.id === "injected") ?? connectors[0];
     return (
-      <div className="flex flex-col items-end gap-1">
-        <div className="flex gap-2">
-          {wallets.length ? (
-            wallets.map((c) => (
-              <button key={c.uid} className="btn-gold" disabled={isPending} onClick={() => connect({ connector: c })}>
-                {isPending ? "Connecting…" : `Connect ${c.name}`}
-              </button>
-            ))
-          ) : (
-            <a className="btn-gold" href="https://metamask.io/download/" target="_blank" rel="noreferrer">Install a Wallet</a>
-          )}
-        </div>
-        {error && <span className="max-w-xs text-right text-xs text-neutral-400">{error.message}</span>}
-      </div>
+      <button className="btn-gold" disabled={isPending} title={error?.message}
+        onClick={() => connector && connect({ connector })}>
+        {isPending ? "Connecting…" : "Connect Wallet"}
+      </button>
     );
   }
 
