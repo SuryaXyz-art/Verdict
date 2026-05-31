@@ -8,6 +8,7 @@ const config = createConfig({
   chains: [somniaTestnet],
   connectors: [injected()],
   transports: { [somniaTestnet.id]: http() },
+  ssr: true,
 });
 
 const queryClient = new QueryClient();
