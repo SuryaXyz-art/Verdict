@@ -20,6 +20,7 @@ export function DealCard({ id }: { id: bigint }) {
   const { writeContractAsync, isPending } = useWriteContract();
   const [evidence, setEvidence] = useState("");
 
+  const TIMEOUT_SECONDS = 24 * 60 * 60;
   if (!deal) return null;
   const { tpl, text } = parseTerms(deal.terms);
   const me = address?.toLowerCase();
@@ -27,6 +28,9 @@ export function DealCard({ id }: { id: bigint }) {
   const isProvider = me === deal.provider.toLowerCase();
   const isParty = isClient || isProvider;
   const open = deal.state === 1, judging = deal.state === 2, resolved = deal.state === 3;
+  const judgedAtNum = deal.judgedAt ? Number(deal.judgedAt) : 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const forceAvailable = judging && judgedAtNum > 0 && nowSec >= judgedAtNum + TIMEOUT_SECONDS;
 
   const tx = (fn: string, args: readonly unknown[], value?: bigint) =>
     writeContractAsync({ address: COURT_ADDRESS, abi: courtAbi, functionName: fn, args, value } as any).then(() => setTimeout(refetch, 2500));
@@ -55,6 +59,20 @@ export function DealCard({ id }: { id: bigint }) {
       )}
 
       {judging && <p className="mt-4 text-xs text-neutral-400">Somnia AI committee is deliberating… (request {deal.requestId.toString()})</p>}
+
+      {judging && isParty && (
+        <div className="mt-4 space-y-2 border-t border-line pt-3">
+          <button
+            className="btn-ghost text-xs"
+            disabled={isPending || !forceAvailable}
+            onClick={() => tx("forceSettle", [id])}
+            title="If the Somnia platform has not called back after 24 hours, either party can force a Refund settlement as a safe manual fallback."
+          >
+            {forceAvailable ? "Force Refund (timeout elapsed)" : "Force Refund (after 24h timeout)"}
+          </button>
+          <p className="text-[10px] text-muted">Escape hatch if AI verdict never arrives.</p>
+        </div>
+      )}
 
       {open && isParty && (
         <div className="mt-4 space-y-2 border-t border-line pt-3">

@@ -10,14 +10,17 @@ export const FEATURE_ADDR: Record<FeatureId, `0x${string}`> = {
   envelope: A(process.env.NEXT_PUBLIC_ENVELOPE_ADDRESS),
 };
 
-// Common shape exposed to the UI: a, b, amount, text, state, requestId, verdict.
+// Common shape exposed to the UI: a, b, amount, text, state, requestId, verdict, judgedAt (for forceSettle escape hatch).
 export const invoiceAbi = [
   { type: "function", name: "count", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   { type: "function", name: "disputeDeposit", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "JUDGMENT_TIMEOUT", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "judgedAt", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "forceSettle", stateMutability: "nonpayable", inputs: [{ name: "id", type: "uint256" }], outputs: [] },
   { type: "function", name: "getInvoice", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "tuple", components: [
     { name: "a", type: "address" }, { name: "b", type: "address" }, { name: "amount", type: "uint256" },
     { name: "text", type: "string" }, { name: "note", type: "string" },
-    { name: "state", type: "uint8" }, { name: "requestId", type: "uint256" }, { name: "verdict", type: "uint8" }] }] },
+    { name: "state", type: "uint8" }, { name: "requestId", type: "uint256" }, { name: "verdict", type: "uint8" }, { name: "judgedAt", type: "uint256" }] }] },
   { type: "function", name: "createInvoice", stateMutability: "nonpayable", inputs: [{ type: "address" }, { type: "uint256" }, { type: "string" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "payInvoice", stateMutability: "payable", inputs: [{ type: "uint256" }], outputs: [] },
   { type: "function", name: "accept", stateMutability: "nonpayable", inputs: [{ type: "uint256" }], outputs: [] },
@@ -27,10 +30,13 @@ export const invoiceAbi = [
 export const giftAbi = [
   { type: "function", name: "count", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   { type: "function", name: "disputeDeposit", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "JUDGMENT_TIMEOUT", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "judgedAt", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "forceSettle", stateMutability: "nonpayable", inputs: [{ name: "id", type: "uint256" }], outputs: [] },
   { type: "function", name: "getGift", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "tuple", components: [
     { name: "a", type: "address" }, { name: "b", type: "address" }, { name: "amount", type: "uint256" },
     { name: "text", type: "string" }, { name: "note", type: "string" },
-    { name: "state", type: "uint8" }, { name: "requestId", type: "uint256" }, { name: "verdict", type: "uint8" }] }] },
+    { name: "state", type: "uint8" }, { name: "requestId", type: "uint256" }, { name: "verdict", type: "uint8" }, { name: "judgedAt", type: "uint256" }] }] },
   { type: "function", name: "sendGift", stateMutability: "payable", inputs: [{ type: "address" }, { type: "string" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "claim", stateMutability: "nonpayable", inputs: [{ type: "uint256" }], outputs: [] },
   { type: "function", name: "dispute", stateMutability: "payable", inputs: [{ type: "uint256" }, { type: "string" }], outputs: [] },
@@ -39,10 +45,13 @@ export const giftAbi = [
 export const envelopeAbi = [
   { type: "function", name: "count", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   { type: "function", name: "disputeDeposit", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "JUDGMENT_TIMEOUT", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "judgedAt", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "forceSettle", stateMutability: "nonpayable", inputs: [{ name: "id", type: "uint256" }], outputs: [] },
   { type: "function", name: "getEnvelope", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "tuple", components: [
     { name: "a", type: "address" }, { name: "b", type: "address" }, { name: "amount", type: "uint256" },
     { name: "lock", type: "bytes32" }, { name: "text", type: "string" },
-    { name: "state", type: "uint8" }, { name: "requestId", type: "uint256" }, { name: "verdict", type: "uint8" }] }] },
+    { name: "state", type: "uint8" }, { name: "requestId", type: "uint256" }, { name: "verdict", type: "uint8" }, { name: "judgedAt", type: "uint256" }] }] },
   { type: "function", name: "seal", stateMutability: "payable", inputs: [{ type: "address" }, { type: "bytes32" }, { type: "string" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "open", stateMutability: "nonpayable", inputs: [{ type: "uint256" }, { type: "string" }], outputs: [] },
   { type: "function", name: "dispute", stateMutability: "payable", inputs: [{ type: "uint256" }, { type: "string" }], outputs: [] },

@@ -40,6 +40,27 @@ describe("InvoiceVerdict", () => {
     await inv.connect(payer).dispute(1, "not delivered", { value: await inv.disputeDeposit() });
     await expect(m.connect(c).fulfill(1, "REFUND", Status.Success)).to.changeEtherBalance(payer, ONE);
   });
+
+  it("forceSettle after timeout refunds the payer (escape hatch)", async () => {
+    const { inv, payee, payer } = await deploy();
+    await inv.connect(payee).createInvoice(payer.address, ONE, "x");
+    await inv.connect(payer).payInvoice(1, { value: ONE });
+    const dep = await inv.disputeDeposit();
+    await inv.connect(payee).dispute(1, "dispute note", { value: dep });
+
+    // too early
+    await expect(inv.connect(payer).forceSettle(1)).to.be.revertedWith("too early");
+
+    // advance 24h+
+    await ethers.provider.send("evm_increaseTime", [24 * 60 * 60 + 10]);
+    await ethers.provider.send("evm_mine", []);
+
+    // either party can force Refund to payer
+    await expect(inv.connect(payee).forceSettle(1)).to.changeEtherBalance(payer, ONE);
+    const i = await inv.getInvoice(1);
+    expect(i.state).to.equal(3); // Resolved
+    expect(i.verdict).to.equal(2); // Refund
+  });
 });
 
 describe("GiftVerdict", () => {

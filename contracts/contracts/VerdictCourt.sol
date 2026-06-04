@@ -20,6 +20,7 @@ contract VerdictCourt {
         State state;
         uint256 requestId;     // Somnia agent request (for receipt link)
         Verdict verdict;
+        uint256 judgedAt;      // when entered Judging (escape hatch timestamp)
     }
 
     // --- Somnia Agents config (testnet defaults; see docs Gas Fees) ---
@@ -27,6 +28,9 @@ contract VerdictCourt {
     uint256 public immutable llmAgentId;
     uint256 public constant SUBCOMMITTEE_SIZE = 3;          // platform default
     uint256 public constant LLM_PRICE_PER_AGENT = 0.07 ether; // LLM Inference price
+
+    // Escape hatch for platform never calling back (timeout, outage, etc.)
+    uint256 public constant JUDGMENT_TIMEOUT = 24 hours;
 
     uint256 public dealCount;
     mapping(uint256 => Deal) public deals;
@@ -106,6 +110,7 @@ contract VerdictCourt {
         );
 
         d.state = State.Judging;
+        d.judgedAt = block.timestamp;
         uint256 requestId = agentRequester.createRequest{value: deposit}(
             llmAgentId,
             address(this),
@@ -118,6 +123,29 @@ contract VerdictCourt {
 
         // Refund any overpayment (state is already Judging, so this is reentrancy-safe).
         if (msg.value > deposit) _pay(msg.sender, msg.value - deposit);
+    }
+
+    /// Manual escape hatch. Either party may call after JUDGMENT_TIMEOUT has elapsed
+    /// since the dispute started (i.e. platform never delivered handleResponse due to
+    /// outage, timeout, or other edge case). Forces a Refund (safe default) and cleans
+    /// up any pending request mapping so a late callback cannot double-settle.
+    function forceSettle(uint256 id) external {
+        Deal storage d = deals[id];
+        require(d.state == State.Judging, "not judging");
+        require(d.judgedAt != 0 && block.timestamp >= d.judgedAt + JUDGMENT_TIMEOUT, "too early");
+        require(msg.sender == d.client || msg.sender == d.provider, "not a party");
+
+        uint256 rid = d.requestId;
+        if (rid != 0) {
+            delete requestToDeal[rid];
+        }
+
+        // Temporarily zero requestId so _resolve emits 0 (signaling forced/manual).
+        // Restore afterward so storage + Receipt viewer still has the original requestId if a receipt exists.
+        uint256 originalRid = d.requestId;
+        d.requestId = 0;
+        _resolve(id, d, Verdict.Refund);
+        d.requestId = originalRid;
     }
 
     /// Somnia platform callback once validators reach consensus.

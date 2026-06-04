@@ -18,6 +18,11 @@ abstract contract AgentArbitrated {
     mapping(uint256 => uint256) public requestToCase; // agent requestId => caseId
     mapping(address => uint256) public reputation;
 
+    // Escape hatch: if platform never calls back (outage, timeout, etc.), parties can force Refund.
+    uint256 public constant JUDGMENT_TIMEOUT = 24 hours;
+    mapping(uint256 => uint256) public judgedAt;        // case id => block.timestamp when entered Judging
+    mapping(uint256 => uint256) public caseToRequestId; // case id => agent requestId (for safe cleanup on force)
+
     event Disputed(uint256 indexed id, uint256 indexed requestId);
     event Resolved(uint256 indexed id, Verdict verdict, uint256 indexed requestId);
 
@@ -52,6 +57,8 @@ abstract contract AgentArbitrated {
             llmAgentId, address(this), this.handleResponse.selector, payload
         );
         requestToCase[requestId] = id;
+        caseToRequestId[id] = requestId;
+        judgedAt[id] = block.timestamp;
         _onJudging(id, requestId);
         emit Disputed(id, requestId);
 
@@ -69,6 +76,8 @@ abstract contract AgentArbitrated {
         uint256 id = requestToCase[requestId];
         require(id != 0, "unknown request");
         delete requestToCase[requestId];
+        delete caseToRequestId[id];
+        delete judgedAt[id];
 
         Verdict v = Verdict.Refund; // safe default on failure/timeout
         if (status == ResponseStatus.Success && responses.length > 0) {
@@ -77,6 +86,28 @@ abstract contract AgentArbitrated {
             else if (h == keccak256("SPLIT")) v = Verdict.Split;
         }
         _settle(id, v, requestId);
+    }
+
+    /// Manual escape hatch. Either party may call after JUDGMENT_TIMEOUT has elapsed
+    /// since the dispute started (i.e. platform never delivered handleResponse due to
+    /// outage, timeout, or other edge case). Forces a Refund (safe default) and cleans
+    /// up any pending request mapping so a late callback cannot double-settle.
+    function forceSettle(uint256 id) external {
+        (address payer, address payee, ) = _parties(id);
+        require(msg.sender == payer || msg.sender == payee, "not a party");
+
+        uint256 started = judgedAt[id];
+        require(started != 0, "not judging");
+        require(block.timestamp >= started + JUDGMENT_TIMEOUT, "too early");
+
+        uint256 requestId = caseToRequestId[id];
+        if (requestId != 0) {
+            delete requestToCase[requestId];
+            delete caseToRequestId[id];
+        }
+        delete judgedAt[id];
+
+        _settle(id, Verdict.Refund, 0); // 0 in event signals forced/manual refund
     }
 
     function _settle(uint256 id, Verdict v, uint256 requestId) internal {

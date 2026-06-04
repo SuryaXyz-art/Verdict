@@ -22,8 +22,12 @@ export function FeatureCard({ id, type }: { id: bigint; type: FeatureId }) {
   const [note, setNote] = useState("");
   const [code, setCode] = useState("");
 
+  const TIMEOUT_SECONDS = 24 * 60 * 60;
   if (!deal) return null;
   const d = deal as any;
+  const judgedAtNum = d.judgedAt ? Number(d.judgedAt) : 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const forceAvailable = judging && judgedAtNum > 0 && nowSec >= judgedAtNum + TIMEOUT_SECONDS;
   const me = address?.toLowerCase();
   const isA = me === d.a.toLowerCase();   // payer / sender
   const isB = me === d.b.toLowerCase();   // payee / recipient
@@ -56,6 +60,20 @@ export function FeatureCard({ id, type }: { id: bigint; type: FeatureId }) {
       )}
 
       {judging && <p className="mt-4 text-xs text-neutral-400">Somnia AI committee is deliberating… (request {d.requestId.toString()})</p>}
+
+      {judging && isParty && (
+        <div className="mt-4 space-y-2 border-t border-line pt-3">
+          <button
+            className="btn-ghost text-xs"
+            disabled={isPending || !forceAvailable}
+            onClick={() => tx("forceSettle", [id])}
+            title="If the Somnia platform has not called back after 24 hours, either party can force a Refund settlement as a safe manual fallback."
+          >
+            {forceAvailable ? "Force Refund (timeout elapsed)" : "Force Refund (after 24h timeout)"}
+          </button>
+          <p className="text-[10px] text-muted">Escape hatch if AI verdict never arrives.</p>
+        </div>
+      )}
 
       {unfunded && isA && (
         <button className="btn-gold mt-4 text-xs" disabled={isPending} onClick={() => tx("payInvoice", [id], d.amount)}>

@@ -14,6 +14,7 @@ contract InvoiceVerdict is AgentArbitrated {
         State state;       // None = created/unfunded, Open = funded
         uint256 requestId;
         Verdict verdict;
+        uint256 judgedAt; // when entered Judging (for forceSettle escape hatch)
     }
 
     uint256 public count;
@@ -79,7 +80,10 @@ contract InvoiceVerdict is AgentArbitrated {
         return string.concat("INVOICE TERMS: ", i.terms, "\nDISPUTE NOTE: ", bytes(i.note).length == 0 ? "(none)" : i.note);
     }
 
-    function _onJudging(uint256 id, uint256 requestId) internal override { invoices[id].requestId = requestId; }
+    function _onJudging(uint256 id, uint256 requestId) internal override {
+        invoices[id].requestId = requestId;
+        invoices[id].judgedAt = judgedAt[id]; // copy for getInvoice() completeness + UI
+    }
     function _onResolved(uint256 id, Verdict v) internal override { invoices[id].state = State.Resolved; invoices[id].verdict = v; }
 
     function getInvoice(uint256 id) external view returns (Invoice memory) { return invoices[id]; }

@@ -148,3 +148,4 @@ A real dispute resolved by Somnia's on-chain AI consensus:
 - Deployer/Nous keys live only in `.env*` (gitignored) — never in the client bundle.
 - Callback verifies `msg.sender == AgentRequester` and tracks pending requests.
 - All agent statuses handled: `Failed`/`TimedOut` refund the client.
+- **Escape hatch**: If the platform never delivers `handleResponse` (outage/timeout edge), either party can call `forceSettle(id)` after 24 hours to force a Refund. Cleans up pending request mappings. Both VerdictCourt and the feature contracts expose `JUDGMENT_TIMEOUT`, `judgedAt(id)`, and `forceSettle`.

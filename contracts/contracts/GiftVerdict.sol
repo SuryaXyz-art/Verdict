@@ -14,6 +14,7 @@ contract GiftVerdict is AgentArbitrated {
         State state;
         uint256 requestId;
         Verdict verdict;
+        uint256 judgedAt; // when entered Judging (for forceSettle escape hatch)
     }
 
     uint256 public count;
@@ -69,7 +70,10 @@ contract GiftVerdict is AgentArbitrated {
         return string.concat("GIFT MESSAGE: ", g.message, "\nDISPUTE NOTE: ", bytes(g.note).length == 0 ? "(none)" : g.note);
     }
 
-    function _onJudging(uint256 id, uint256 requestId) internal override { gifts[id].requestId = requestId; }
+    function _onJudging(uint256 id, uint256 requestId) internal override {
+        gifts[id].requestId = requestId;
+        gifts[id].judgedAt = judgedAt[id]; // copy for getGift() completeness + UI
+    }
     function _onResolved(uint256 id, Verdict v) internal override { gifts[id].state = State.Resolved; gifts[id].verdict = v; }
 
     function getGift(uint256 id) external view returns (Gift memory) { return gifts[id]; }

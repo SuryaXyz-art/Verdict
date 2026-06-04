@@ -105,4 +105,23 @@ describe("VerdictCourt", () => {
     await expect(court.connect(client).dispute(1, { value: dep + ONE }))
       .to.changeEtherBalances([mock, court], [dep, 0n]);
   });
+
+  it("forceSettle after timeout refunds client (escape hatch, no platform callback needed)", async () => {
+    const { court, client, provider } = await deploy();
+    await court.connect(client).createDeal(provider.address, "x", { value: ONE });
+    const dep = await court.disputeDeposit();
+    await court.connect(client).dispute(1, { value: dep });
+
+    await expect(court.connect(provider).forceSettle(1)).to.be.revertedWith("too early");
+
+    await ethers.provider.send("evm_increaseTime", [24 * 60 * 60 + 1]);
+    await ethers.provider.send("evm_mine", []);
+
+    // forces Refund to client
+    await expect(court.connect(provider).forceSettle(1)).to.changeEtherBalance(client, ONE);
+    const d = await court.getDeal(1);
+    expect(d.state).to.equal(3); // Resolved
+    expect(d.verdict).to.equal(2); // Refund
+    // requestId kept for potential receipt, but event used 0 (we don't assert event here)
+  });
 });

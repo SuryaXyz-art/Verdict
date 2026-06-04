@@ -14,6 +14,7 @@ contract EnvelopeVerdict is AgentArbitrated {
         State state;
         uint256 requestId;
         Verdict verdict;
+        uint256 judgedAt; // when entered Judging (for forceSettle escape hatch)
     }
 
     uint256 public count;
@@ -74,7 +75,10 @@ contract EnvelopeVerdict is AgentArbitrated {
         return string.concat("ENVELOPE NOTE: ", e.note);
     }
 
-    function _onJudging(uint256 id, uint256 requestId) internal override { envelopes[id].requestId = requestId; }
+    function _onJudging(uint256 id, uint256 requestId) internal override {
+        envelopes[id].requestId = requestId;
+        envelopes[id].judgedAt = judgedAt[id]; // copy for getEnvelope() completeness + UI
+    }
     function _onResolved(uint256 id, Verdict v) internal override { envelopes[id].state = State.Resolved; envelopes[id].verdict = v; }
 
     function getEnvelope(uint256 id) external view returns (Envelope memory) { return envelopes[id]; }
