@@ -44,6 +44,17 @@ export function DealCard({ id }: { id: bigint }) {
         <span className={`tag ${stateColor}`}>{STATE_LABELS[deal.state]}</span>
       </div>
       <p className="mt-3 text-sm">{text}</p>
+      {(deal.clientEvidence || deal.providerEvidence) && (
+        <div className="mt-2 p-2 rounded bg-black/40 border border-line text-xs">
+          <div className="font-mono text-muted mb-1">Evidence</div>
+          {deal.clientEvidence && (
+            <div><span className="text-muted">Client:</span> <span className="text-white">{deal.clientEvidence}</span></div>
+          )}
+          {deal.providerEvidence && (
+            <div><span className="text-muted">Provider:</span> <span className="text-white">{deal.providerEvidence}</span></div>
+          )}
+        </div>
+      )}
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted">
         <span>client {short(deal.client)}</span>
         <span>provider {short(deal.provider)}</span>

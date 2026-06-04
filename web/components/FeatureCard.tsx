@@ -25,9 +25,6 @@ export function FeatureCard({ id, type }: { id: bigint; type: FeatureId }) {
   const TIMEOUT_SECONDS = 24 * 60 * 60;
   if (!deal) return null;
   const d = deal as any;
-  const judgedAtNum = d.judgedAt ? Number(d.judgedAt) : 0;
-  const nowSec = Math.floor(Date.now() / 1000);
-  const forceAvailable = judging && judgedAtNum > 0 && nowSec >= judgedAtNum + TIMEOUT_SECONDS;
   const me = address?.toLowerCase();
   const isA = me === d.a.toLowerCase();   // payer / sender
   const isB = me === d.b.toLowerCase();   // payee / recipient
@@ -35,6 +32,10 @@ export function FeatureCard({ id, type }: { id: bigint; type: FeatureId }) {
   const unfunded = type === "invoice" && d.state === 0;
   const open = d.state === 1, judging = d.state === 2, resolved = d.state === 3;
   const stateText = unfunded ? "Awaiting payment" : judging ? "Judging" : resolved ? "Resolved" : "Active";
+
+  const judgedAtNum = d.judgedAt ? Number(d.judgedAt) : 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const forceAvailable = judging && judgedAtNum > 0 && nowSec >= judgedAtNum + TIMEOUT_SECONDS;
 
   const tx = (functionName: string, args: readonly unknown[], value?: bigint) =>
     writeContractAsync({ address: addr, abi: cfg.abi, functionName, args, value } as any).then(() => setTimeout(refetch, 2500));
@@ -46,6 +47,11 @@ export function FeatureCard({ id, type }: { id: bigint; type: FeatureId }) {
         <span className={`tag ${open ? "text-white" : judging ? "text-neutral-400" : "text-neutral-200"}`}>{stateText}</span>
       </div>
       <p className="mt-3 text-sm">{d.text}</p>
+      {d.note && (
+        <div className="mt-1 text-xs text-muted">
+          Dispute note / evidence: <span className="text-white">{d.note}</span>
+        </div>
+      )}
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted">
         <span>{cfg.aLabel} {short(d.a)}</span>
         <span>{cfg.bLabel} {short(d.b)}</span>
